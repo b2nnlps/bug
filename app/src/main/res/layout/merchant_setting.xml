@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+
+    <Button
+        android:text="修改密码"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_save"
+        android:layout_below="@+id/userConfirm"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31dp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_password"
+        android:id="@+id/imageView2"
+        android:layout_alignTop="@+id/userPassword"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/userNewpass" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_marginTop="25dp"
+        android:inputType="textPassword"
+        android:id="@+id/userPassword"
+        android:hint="原密码"
+        android:maxLines="1"
+        android:imeOptions="actionNext"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/imageView2"
+        android:layout_marginStart="17dp" />
+
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:id="@+id/userNewpass"
+        android:inputType="textPassword"
+        android:hint="重设密码"
+        android:layout_marginTop="34dp"
+        android:layout_below="@+id/userPassword"
+        android:layout_alignStart="@+id/userPassword" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_password"
+        android:id="@+id/imageView5"
+        android:layout_above="@+id/btn_save"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/userConfirm" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:id="@+id/userConfirm"
+        android:hint="确认密码"
+        android:inputType="textPassword"
+        android:layout_marginTop="34dp"
+        android:layout_below="@+id/userNewpass"
+        android:layout_alignStart="@+id/userPassword" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_password"
+        android:id="@+id/imageView6"
+        android:layout_alignTop="@+id/userNewpass"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/userConfirm" />
+
+
+</RelativeLayout>
