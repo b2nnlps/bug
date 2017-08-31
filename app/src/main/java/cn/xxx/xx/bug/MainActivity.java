@@ -78,9 +78,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         instance = this;    //用于弹窗依赖和唤醒
         initPage();
+        checkUpdate();
 
     }
 
@@ -99,6 +100,12 @@ public class MainActivity extends AppCompatActivity
         for (BluetoothDevice device : bluetoothDeviceSet) {//搜索所有系统的蓝牙设备
             if (!bondDevicesList.contains(device)) bondDevicesList.add(device);
             if (!defaultDevice.equals("") && device.getAddress().equals(defaultDevice)) {
+                Intent intent = new Intent(MainActivity.this, PrintActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+                intent.putExtra(CMD, "connect");
+                intent.putExtra(DEVICE, device);
+                startService(intent);
+                ToastUtil.showToast(MainActivity.this, "重连最近打印机...");
             }
         }
         boundName.addAll(getData(bondDevicesList));
@@ -143,6 +150,7 @@ public class MainActivity extends AppCompatActivity
         });
 
     }
+
 
     /*判断蓝牙是否打开*/
     public boolean isOpen() {
@@ -280,7 +288,10 @@ public class MainActivity extends AppCompatActivity
         int count = list.size();
         for (int i = 0; i < count; i++) {
             String deviceName = list.get(i).getName();
-            data.add(deviceName != null ? deviceName : list.get(i).getAddress());
+            String deviceAddress = list.get(i).getAddress();
+            deviceName = deviceName != null ? deviceName + "-" + deviceAddress : list.get(i).getAddress();
+            if (defaultDevice.equals(deviceAddress)) deviceName = "最近 " + deviceName;
+            data.add(deviceName);
         }
         return data;
     }
@@ -370,7 +381,7 @@ public class MainActivity extends AppCompatActivity
         String mess = "";
         oldPassword = ToastUtil.stringToMD5(oldPassword + "wawawawawa");
         if (oldPassword.equals(userPassword)) {//和原密码相同
-            if (newPassword.length() > 2) {
+            if (newPassword.length() > 3) {
                 if (newPassword.equals(comPassword)) {//两次密码一致
                     String str = ToastUtil.stringToMD5(newPassword + "wawawawawa");
                     writeFile("user.ng", str);//保存设置
@@ -379,7 +390,7 @@ public class MainActivity extends AppCompatActivity
                 } else
                     mess = "两次密码输入不一致";
             } else
-                mess = "密码最少为三位";
+                mess = "密码最少为四位";
 
         } else {
             mess = "原密码错误";
@@ -408,12 +419,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @android.webkit.JavascriptInterface
-    public void actionFromJsWithParam(final String str) {
+    public void print(final String str) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(MainActivity.this, "js调用了Native函数传递参数：" + str, Toast.LENGTH_SHORT).show();
-
+                Intent intent = new Intent(MainActivity.this, PrintActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+                String temp = str.replace("\r", "\n");//替换掉旧版的回车
+                intent.putExtra(CMD, temp);//把网页里面的值传进来打印
+                startService(intent);
             }
         });
 
@@ -562,6 +576,20 @@ public class MainActivity extends AppCompatActivity
         } catch (Exception e) {
         }
         return res;
+    }
+
+
+    public void checkUpdate() {//后门停止服务
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {//新线程开启新服务，在服务里面开线程请求HTTP，分割HTTP信息，获取是不是最新，下载最新
+                //启动服务*/
+                Intent service = new Intent(MainActivity.this, UpdataService.class);
+                startService(service);
+            }
+        }).start();
+
     }
 
     public void writeFile(String fileName, String writestr) {
