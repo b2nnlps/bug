@@ -17,6 +17,11 @@ import android.os.PowerManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -35,15 +40,35 @@ public class PrintActivity extends Service {
     private BluetoothSocket bluetoothSocket;
     private ArrayList<BluetoothSocket> printers = new ArrayList<>();
     private ArrayList<BluetoothDevice> bondDevicesList = new ArrayList<>();
-    private boolean autoConnent = true;
     private String myAddress = "", cmd = "";
     private int printerCount = 0;
     BluetoothSocket printer;
     OutputStream outputStream;
 
+    private Handler handler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 200:
+                    String response = (String) msg.obj;
+                    ToastUtil.showToast(PrintActivity.this, "打印机连接成功！");
+                    break;
+                case 400:
+                    ToastUtil.showToast(PrintActivity.this, "打印机连接失败，请检查设置！");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
+        System.out.println("启动Service");
         showBarMess("正在运行中...");
     }
 
@@ -66,27 +91,21 @@ public class PrintActivity extends Service {
     }
 
     private void initData(Intent intent) {
-        System.out.println("启动Service");
         isDisconnect();//更新打印机状态
         cmd = intent.getStringExtra(MainActivity.CMD);//获取命令，字符串类型
         System.out.println(cmd);
-        if (cmd.equals("reConnect")) {//重连服务器，readFile里自带了
+        if (!cmd.equals("connect")) {//重连服务器，readFile里自带了
+            print(cmd);
             return;
         }
         device = intent.getParcelableExtra(MainActivity.DEVICE);
 
         if (!bondDevicesList.contains(device)) {//是否已连接过 没有点击或或者连接丢失
-            startConnect();
+            ThreadConnect();
         } else {
             ToastUtil.showToast(PrintActivity.this, "已连接！");
-
         }
 
-    }
-
-    private void initView() {
-//        myName = device.getName() == null ? device.getAddress() : device.getName();
-        myAddress = device.getAddress();  //获取设备地址，保持这个玩意，下次直接连接
     }
 
     /**
@@ -108,15 +127,19 @@ public class PrintActivity extends Service {
     }
 
     private void setConnectResult(boolean result) {
+        Message message = new Message();
         if (result) {
+            myAddress = device.getAddress();
             writeFile("defaultDevice.ng", myAddress);
-            ToastUtil.showToast(PrintActivity.this, "打印机连接成功！");
+            message.what = 200; //弹出打印机连接成功
             printerCount++;
+            printSuccess();
             showBarMess("已连接" + String.valueOf(printerCount) + "个打印机");
         } else {
-            ToastUtil.showToast(PrintActivity.this, "打印机连接失败，请检查设置！");
+            message.what = 400;
         }
-
+        message.obj = "";
+        handler.sendMessage(message);
     }
 
     /**
@@ -136,6 +159,7 @@ public class PrintActivity extends Service {
                 byte[] print_data = sendData.getBytes("gbk");
                 outputStream.write(print_data, 0, print_data.length);
                 outputStream.flush();
+                ToastUtil.showToast(PrintActivity.this, "打印小票成功");
             } catch (IOException e) {
                 ToastUtil.showToast(PrintActivity.this, "发送失败！");
                 ToastUtil.showToast(PrintActivity.this, "有设备掉线了，请检查连接！");
@@ -143,6 +167,26 @@ public class PrintActivity extends Service {
                 showBarMess("已连接" + String.valueOf(printerCount) + "个打印机");
                 isDisconnect();//更新打印机状态
             }
+        }
+    }
+
+    /**
+     * 打印数据
+     */
+    public void printSuccess() {
+        String sendData = "=====打印机连接成功=====" + "\n\n\n\n\n\n";//3行回车正好加上打印后缀
+        BluetoothSocket printer = bluetoothSocket;
+        try {
+            outputStream = printer.getOutputStream();
+            byte[] print_data = sendData.getBytes("gbk");
+            outputStream.write(print_data, 0, print_data.length);
+            outputStream.flush();
+        } catch (IOException e) {
+            ToastUtil.showToast(PrintActivity.this, "发送失败！");
+            ToastUtil.showToast(PrintActivity.this, "有设备掉线了，请检查连接！");
+            printerCount--;
+            showBarMess("已连接" + String.valueOf(printerCount) + "个打印机");
+            isDisconnect();//更新打印机状态
         }
     }
 
@@ -202,11 +246,18 @@ public class PrintActivity extends Service {
     @Override
     public void onDestroy() {
         disconnect();
-        if (autoConnent) {
-            Intent service = new Intent(this, PrintActivity.class);
-            startService(service);
-            super.onDestroy();
-        }
+        super.onDestroy();
+    }
+
+    private void ThreadConnect() {//通过线程连接蓝牙防卡
+        //  自动检测更新
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startConnect();
+            }
+        }).start();//这个start()方法不要忘记了
+
     }
 
     @Override
