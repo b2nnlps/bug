@@ -33,6 +33,7 @@
         </activity>
 
         <service android:name="cn.xxx.xx.bug.PrintActivity" />
+        <service android:name="cn.xxx.xx.bug.UpdataService" />
     </application>
 
 </manifest>

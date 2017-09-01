@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>设置网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/demo.css"/>
+    <link rel="stylesheet" type="text/css" href="css/add.css"/>
+    <link rel="stylesheet" type="text/css" href="css/common.css"/>
+</head>
+<body>
+<div class="container">
+
+    <section>
+        <div id="container_demo">
+
+            <div id="wrapper">
+                <h1>网站设置</h1>
+                <div id="login" class="form">
+                    <form>
+                        <p>
+                            <label for="name" class="uname" data-icon="u"> 网站名称： </label>
+                            <input id="name" name="name" required="required" type="text"
+                                   placeholder="网站名称"/>
+                        </p>
+
+                        <p>
+                            <label for="url" class="uname" data-icon="u"> 网站地址： </label>
+                            <input id="url" name="url" required="required" type="text"
+                                   placeholder="例：http://aaa,88888.com/"/>
+                        </p>
+
+                        <p>
+                            <label for="username" class="uname" data-icon="u"> 网站账号： </label>
+                            <input id="username" name="username" required="required" type="text"
+                                   placeholder="网站账号"/>
+                        </p>
+
+                        <p>
+                            <label for="password" class="youpasswd" data-icon="p"> 网站密码： </label>
+                            <input id="password" name="password" required="required" type="password"
+                                   placeholder="网站密码"/>
+                        </p>
+
+                        <div style=" width: 100%;text-align:center">
+                            <button class="button blue" onclick="save();return false;">保存</button>
+                            <a class="button blue" onclick="backList()">退出</a>
+                        </div>
+                    </form>
+
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+</body>
+</html>
+<script src="js/jquery.min.js"></script>
+<script src="js/base.js"></script>
+<script>
+var id=getQueryString("id");
+var name=getQueryString("name");
+var url=decodeURI(getQueryString("url"));
+var username=getQueryString("username");
+var password=getQueryString("password");
+put(name,url,username,password);
+	function put(name,url,username,password){
+		$("#name").val(name);
+		$("#url").val(url);
+		$("#username").val(username);
+		$("#password").val(password);
+	}
+
+	function save(){
+	    name=$("#name").val();
+		url=encodeURI($("#url").val());
+		username=$("#username").val();
+		password=$("#password").val();
+	    if(name=="") {$("#name").focus(); return;}
+		if(url=="") {$("#url").focus(); return;}
+		if(username=="") {$("#username").focus(); return;}
+		if(password=="") {$("#password").focus(); return;}
+		console.log(id+name+url+username+password);
+		window.android.setWeb(id,name,url,username,password);
+		return false;
+	}
+
+	function backList(){
+		window.android.backList();
+	}
+
+</script>

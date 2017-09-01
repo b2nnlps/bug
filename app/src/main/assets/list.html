@@ -1,9 +1,63 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>网站列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/demo.css"/>
+    <link rel="stylesheet" type="text/css" href="css/add.css"/>
+    <link rel="stylesheet" type="text/css" href="css/list.css"/>
+    <link rel="stylesheet" type="text/css" href="css/common.css"/>
+
+</head>
 <body>
-<h1 onclick="androidPrint()">androidPrint()</h1>
-<h1 onclick="a()">a()</h1>
-<h1 onclick="b()">b()</h1>
-<a href="http://103.243.182.67/mobile/">开发中...</a>
+<div class="container">
+
+    <div id="container_demo">
+
+        <div id="wrapper">
+            <h1>网站浏览</h1>
+            <div id="login" class="form">
+
+                <div class="list">
+                    <span>七星虫</span>
+                    <p>欢迎您使用</p>
+                    <div>
+                        <a class="button blue" href="add.html?id=-1">添加网站</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 </body>
-</html>>
-<script src="js/bugbase.js"></script>
+</html>
+<script src="js/jquery.min.js"></script>
+<script src="js/base.js"></script>
+<script>
+var id=getQueryString("id");
+var name=getQueryString("name");
+var url=getQueryString("url");
+addUrl(id,name,url);
+    function addUrl(id,name,url){
+       var id=id.split("|");
+       var name=name.split("|");
+       var url=url.split("|");
+       var i,text="";
+       for(i=0;i<name.length;i++){
+            if(name[i].length>0){
+                text+='<div class="list">';
+                text+='<span>'+name[i]+'</span>';
+                text+='<p>'+decodeURI(url[i])+'</p>';
+                text+='<div><a class="button blue">登入</a> <a class="button blue" onclick="getWeb('+id[i]+')">设置</a></div></div>';
+            }
+       }
+       $("#login").prepend(text);
+    }
+	
+	function getWeb(id){
+		window.android.getWeb(id);
+	}
+
+</script>
