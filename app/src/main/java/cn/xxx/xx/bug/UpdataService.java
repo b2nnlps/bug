@@ -19,7 +19,7 @@ import org.apache.http.util.EntityUtils;
 public class UpdataService extends Service {
 
 
-    String versionUrl = "http://ms.n39.cn/bug.php?ver=", versionCode = "1";
+    String versionUrl = "http://ms.n39.cn/bug.php?ver=1";
 
     private Handler handler = new Handler() {
 
@@ -49,7 +49,6 @@ public class UpdataService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        versionUrl += versionCode;
         System.out.println(versionUrl);
 
         // 检测更新
@@ -90,7 +89,6 @@ public class UpdataService extends Service {
                         handler.sendMessage(message);
                     }
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     Message message = new Message();
                     message.what = 400;
                     message.obj = "error";
