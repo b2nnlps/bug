@@ -413,7 +413,6 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(MainActivity.this, "登录失败，请检查密码", Toast.LENGTH_SHORT).show();
                     isLogin = false;
                 }
-
             }
         });
     }
@@ -430,7 +429,61 @@ public class MainActivity extends AppCompatActivity
                 startService(intent);
             }
         });
+    }
 
+    @android.webkit.JavascriptInterface
+    public void backList() {//通过网站调用返回网站列表
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showPage(2);
+            }
+        });
+    }
+
+    @android.webkit.JavascriptInterface
+    public void getWeb(final String id) {//获取网站信息
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String FileName = id + ".web";
+                String FileData = readFile(FileName);
+                String data[];
+                String temp = "-1";
+                if (!FileData.equals("")) {
+                    data = FileData.split("\\|");
+                    temp = "id=" + id + "&name=" + data[0] + "&url=" + data[1] + "&username=" + data[2] + "&password=" + data[3];
+                }
+                mWebView.loadUrl("file:///android_asset/add.html?" + temp);
+            }
+        });
+    }
+
+    @android.webkit.JavascriptInterface
+    public void setWeb(final String id, final String name, final String url, final String username, final String password) {//通过网站调用返回网站列表
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String fileNmae = id + ".web";
+                if (id.equals("-1")) {
+                    String FileName;
+                    int i;
+                    for (i = 1; i <= 100; i++) {
+                        FileName = String.valueOf(i) + ".web";//如果不存在文件，则按顺序选择一个文件
+                        if (readFile(FileName).equals("")) {
+                            fileNmae = i + ".web";
+                            break;
+                        }
+                    }
+                }
+
+                String temp = name + "|" + url + "|" + username + "|" + password;
+                writeFile(fileNmae, temp);
+                System.out.println(fileNmae + "---" + temp);
+                ToastUtil.showToast(MainActivity.this, "网站保存成功");
+                showPage(2);//返回到首页
+            }
+        });
     }
 
     public void readSetting() {//读取设置
@@ -472,7 +525,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case 2://网址查看
                 page_web.setVisibility(View.VISIBLE);
-                mWebView.loadUrl("file:///android_asset/list.html");
+                mWebView.loadUrl("file:///android_asset/list.html?" + getWebList());
                 changeTitle(R.drawable.ic_eye_white, "网址查看");
                 break;
             case 3://打印设置
@@ -483,7 +536,29 @@ public class MainActivity extends AppCompatActivity
                 page_setting.setVisibility(View.VISIBLE);
                 changeTitle(R.drawable.ic_setting_white, "应用设置");
                 break;
+            case 99://返回网页界面
+                page_web.setVisibility(View.VISIBLE);
+                break;
         }
+    }
+
+    //获取文件里面的网页列表
+    public String getWebList() {
+        int i;
+        String FileName, FileData, data[], id = "", name = "", url = "";
+        for (i = 1; i <= 100; i++) {
+            FileName = String.valueOf(i) + ".web";//如果存在文件
+            FileData = readFile(FileName);
+            if (!FileData.equals("")) {
+                data = FileData.split("\\|");
+                id += String.valueOf(i) + "|";
+                name += data[0] + "|";
+                url += data[1] + "|";
+            }
+        }
+        System.out.println("id=" + id + "&name=" + name + "&url=" + url);
+
+        return "id=" + id + "&name=" + name + "&url=" + url;
     }
 
     @Override
@@ -494,10 +569,15 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(GravityCompat.START);
             }
         } finally {
-            if (mWebView.canGoBack()) {
-                mWebView.goBack();// 返回前一个页面
-            } else
-                moveTaskToBack(true);
+            if (page_web.getVisibility() == View.VISIBLE) {//如果打开着网页，则返回网页上一页
+                if (mWebView.canGoBack()) {
+                    mWebView.goBack();// 返回前一个页面
+                } else
+                    moveTaskToBack(true);
+            } else {//否则跳转到网页界面
+                showPage(99);
+            }
+
         }
     }
 
