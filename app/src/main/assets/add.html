@@ -42,9 +42,9 @@
                                    placeholder="网站密码"/>
                         </p>
 
-                        <div style=" width: 100%;text-align:center">
+                        <div id="buttons" style=" width: 100%;text-align:center">
                             <button class="button blue" onclick="save();return false;">保存</button>
-                            <a class="button blue" onclick="backList()">退出</a>
+                            <a class="button green" onclick="backList()">返回</a>
                         </div>
                     </form>
 
@@ -63,6 +63,9 @@
 <script src="js/base.js"></script>
 <script>
 var id=getQueryString("id");
+if(id!="-1"){
+	$("#buttons").prepend('<a class="button red" onclick="deleteWeb('+id+')">删除</a>');
+}
 var name=getQueryString("name");
 var url=decodeURI(getQueryString("url"));
 var username=getQueryString("username");
@@ -91,6 +94,10 @@ put(name,url,username,password);
 
 	function backList(){
 		window.android.backList();
+	}
+	
+	function deleteWeb(id){
+		window.android.deleteWeb(id);
 	}
 
 </script>

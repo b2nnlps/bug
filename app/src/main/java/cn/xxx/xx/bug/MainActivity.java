@@ -460,6 +460,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @android.webkit.JavascriptInterface
+    public void deleteWeb(final String id) {//删除网站信息
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String FileName = id + ".web";
+                writeFile(FileName, "");//写入空即可
+                ToastUtil.showToast(MainActivity.this, "删除网站成功");
+                showPage(2);//切换到首页
+            }
+        });
+    }
+
+    @android.webkit.JavascriptInterface
     public void setWeb(final String id, final String name, final String url, final String username, final String password) {//通过网站调用返回网站列表
         runOnUiThread(new Runnable() {
             @Override
@@ -546,7 +559,7 @@ public class MainActivity extends AppCompatActivity
     public String getWebList() {
         int i;
         String FileName, FileData, data[], id = "", name = "", url = "";
-        for (i = 1; i <= 100; i++) {
+        for (i = 1; i <= 200; i++) {
             FileName = String.valueOf(i) + ".web";//如果存在文件
             FileData = readFile(FileName);
             if (!FileData.equals("")) {
