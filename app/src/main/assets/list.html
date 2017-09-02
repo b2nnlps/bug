@@ -16,7 +16,7 @@
     <div id="container_demo">
 
         <div id="wrapper">
-            <h1>网站浏览</h1>
+            <h1>网站列表</h1>
             <div id="login" class="form">
 
                 <div class="list">
@@ -34,7 +34,7 @@
 </body>
 </html>
 <script src="js/jquery.min.js"></script>
-<script src="js/base.js"></script>
+<script src="js/bugbase.js"></script>
 <script>
 var id=getQueryString("id");
 var name=getQueryString("name");
@@ -50,7 +50,7 @@ addUrl(id,name,url);
                 text+='<div class="list">';
                 text+='<span>'+name[i]+'</span>';
                 text+='<p>'+decodeURI(url[i])+'</p>';
-                text+='<div><a class="button blue">登入</a> <a class="button blue" onclick="getWeb('+id[i]+')">设置</a></div></div>';
+                text+='<div><a class="button blue" onclick="loginWeb('+id[i]+')">登入</a> <a class="button blue" onclick="getWeb('+id[i]+')">设置</a></div></div>';
             }
        }
        $("#login").prepend(text);
@@ -58,6 +58,10 @@ addUrl(id,name,url);
 	
 	function getWeb(id){
 		window.android.getWeb(id);
+	}
+
+	function loginWeb(id){
+		window.android.loginWeb(id);
 	}
 
 </script>
