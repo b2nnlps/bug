@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -23,6 +24,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -33,11 +36,14 @@ import android.widget.Toast;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Set;
 
 import static android.webkit.WebSettings.LOAD_DEFAULT;
+import static java.lang.System.in;
 
 
 public class MainActivity extends AppCompatActivity
@@ -59,7 +65,8 @@ public class MainActivity extends AppCompatActivity
     private MyBluetoothAdapter unboundAdapter;
     private String defaultDevice = "";
     private boolean isPrinter = false, isLogin = false;
-    String userPassword = "";
+    String userPassword = "", bugUser = "", bugPass;
+    int nowPage = 0, webCount = 0;
     //=================绑定控件====================
     Button btnSearch, btn_save;
     ListView lvUnboundDevice, lvBoundDevice;
@@ -367,6 +374,23 @@ public class MainActivity extends AppCompatActivity
                 view.loadUrl(url);
                 return true;
             }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                //     String js=readAssetFile("js/bugbase.js");
+                //  String js = "var newscript = document.createElement(\"script\");";
+                //   js += "newscript.src=\"file:///android_asset/js/bugbase.js\";";
+                //   js += "document.body.appendChild(newscript);";
+                //  mWebView.loadUrl("javascript:"+js );
+                webCount++;
+                if (nowPage != 0 && !bugUser.equals("") && !bugPass.equals("") && !url.contains("android_asset") && webCount < 4) {//如果是本地的就不替换了
+                    mWebView.loadUrl("javascript: console.log(666);$(\"input\").eq(0).val('" + bugUser + "');$(\"input\").eq(1).val('" + bugPass + "')");
+                    webCount = 0;
+
+                }
+
+            }
         });
         mWebView.addJavascriptInterface(this, "android");
 
@@ -408,7 +432,7 @@ public class MainActivity extends AppCompatActivity
                 if (userPassword.equals(passwordMd5)) {
                     Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                     isLogin = true;
-                    showPage(1);//切换到首页
+                    showPage(1);//切换到列表
                 } else {
                     Toast.makeText(MainActivity.this, "登录失败，请检查密码", Toast.LENGTH_SHORT).show();
                     isLogin = false;
@@ -432,11 +456,34 @@ public class MainActivity extends AppCompatActivity
     }
 
     @android.webkit.JavascriptInterface
+    public void loginWeb(final String id) {//登入网站
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("登录网站");
+                String FileName = id + ".web";
+                String FileData = readFile(FileName);
+                String data[];
+                if (!FileData.equals("")) {
+                    data = FileData.split("\\|");
+                    bugUser = data[2];
+                    bugPass = data[3];
+                    String url = ToastUtil.toURLDecoded(data[1]);
+                    if (!url.contains("http")) url = "http://" + url;
+                    mWebView.loadUrl(url);
+                    System.out.println(url);
+                    webCount = 0;
+                }
+            }
+        });
+    }
+
+    @android.webkit.JavascriptInterface
     public void backList() {//通过网站调用返回网站列表
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                showPage(2);
+                showPage(1);
             }
         });
     }
@@ -467,7 +514,7 @@ public class MainActivity extends AppCompatActivity
                 String FileName = id + ".web";
                 writeFile(FileName, "");//写入空即可
                 ToastUtil.showToast(MainActivity.this, "删除网站成功");
-                showPage(2);//切换到首页
+                showPage(1);//切换到列表
             }
         });
     }
@@ -494,7 +541,7 @@ public class MainActivity extends AppCompatActivity
                 writeFile(fileNmae, temp);
                 System.out.println(fileNmae + "---" + temp);
                 ToastUtil.showToast(MainActivity.this, "网站保存成功");
-                showPage(2);//返回到首页
+                showPage(1);//返回到列表
             }
         });
     }
@@ -529,30 +576,31 @@ public class MainActivity extends AppCompatActivity
             case 0://登录
                 page_web.setVisibility(View.VISIBLE);
                 mWebView.loadUrl("file:///android_asset/login.html");
-                changeTitle(R.drawable.ic_index_white, "登录");
+                changeTitle(R.drawable.ic_username_white, "登录");
                 break;
             case 1://首页
                 page_web.setVisibility(View.VISIBLE);
-                mWebView.loadUrl("file:///android_asset/index.html");
-                changeTitle(R.drawable.ic_index_white, "首页");
-                break;
-            case 2://网址查看
-                page_web.setVisibility(View.VISIBLE);
                 mWebView.loadUrl("file:///android_asset/list.html?" + getWebList());
-                changeTitle(R.drawable.ic_eye_white, "网址查看");
+                changeTitle(R.drawable.ic_index_white, "网站列表");
                 break;
-            case 3://打印设置
+            case 2://打印设置
                 page_printer.setVisibility(View.VISIBLE);
                 changeTitle(R.drawable.ic_printer_white, "打印设置");
                 break;
-            case 4://应用设置
+            case 3://应用设置
                 page_setting.setVisibility(View.VISIBLE);
                 changeTitle(R.drawable.ic_setting_white, "应用设置");
+                break;
+            case 4://关于我们
+                page_web.setVisibility(View.VISIBLE);
+                mWebView.loadUrl("file:///android_asset/about.html");
+                changeTitle(R.drawable.ic_love_white, "关于我们");
                 break;
             case 99://返回网页界面
                 page_web.setVisibility(View.VISIBLE);
                 break;
         }
+        nowPage = page;
     }
 
     //获取文件里面的网页列表
@@ -609,9 +657,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_change) {
-
+        if (id == R.id.action_exit) {
+            System.exit(0);
             return true;
+        } else if (id == R.id.action_open_keyboard) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        } else if (id == R.id.action_close_keyboard) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         }
 
         return super.onOptionsItemSelected(item);
@@ -625,11 +677,11 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_index) {
             showPage(1);
-        } else if (id == R.id.nav_web) {
-            showPage(2);
         } else if (id == R.id.nav_printer) {
-            showPage(3);
+            showPage(2);
         } else if (id == R.id.nav_manager) {
+            showPage(3);
+        } else if (id == R.id.nav_about) {
             showPage(4);
         }
 
@@ -670,7 +722,6 @@ public class MainActivity extends AppCompatActivity
         }
         return res;
     }
-
 
     public void checkUpdate() {//后门停止服务
 
