@@ -2,8 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_change"
+        android:id="@+id/action_open_keyboard"
         android:orderInCategory="100"
-        android:title="切换账户"
+        android:title="开启键盘"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_close_keyboard"
+        android:orderInCategory="100"
+        android:title="关闭键盘"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_exit"
+        android:orderInCategory="100"
+        android:title="退出应用"
         app:showAsAction="never" />
 </menu>

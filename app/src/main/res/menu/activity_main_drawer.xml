@@ -5,11 +5,7 @@
         <item
             android:id="@+id/nav_index"
             android:icon="@drawable/ic_index"
-            android:title="首页" />
-        <item
-            android:id="@+id/nav_web"
-            android:icon="@drawable/ic_eye"
-            android:title="网址查看" />
+            android:title="网站列表" />
         <item
             android:id="@+id/nav_printer"
             android:icon="@drawable/ic_printer"
@@ -18,6 +14,10 @@
             android:id="@+id/nav_manager"
             android:icon="@drawable/ic_setting"
             android:title="应用设置" />
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_love"
+            android:title="关于我们" />
     </group>
 
     <item android:title="联系我们">
